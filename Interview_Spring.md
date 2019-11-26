@@ -28,30 +28,18 @@
 6) View : Controller가 처리한 결과값을 보여줄 View를 생성한다.
 
 ## 5. 스프링 필터와 인터셉터의 차이점
-ㄱ예를들어 로그인 관련(세션체크)처리, 권한체크, XSS(Cross site script)방어, pc와 모바일웹의 분기처리, 로그, 페이지 인코딩 변환 등이 있다. 
-공통업무에 관련된 코드를 모든 페이지 마다 작성 해야한다면 중복된 코드가 많아지게 되고 
-프로젝트 단위가 커질수록 서버에 부하를 줄 수도있으며, 소스 관리도 되지 않는다.
-
-즉, 공통 부분은 빼서 따로 관리하는게 좋다.
-
-이러한 공통업무를 프로그램 흐름의 앞, 중간, 뒤에 추가하여 자동으로 처리할 수 있는 방법이 있고 관련된 내용을 포스팅 하려고 한다.
-
-위와 같은 공통처리를 위해 활용할 수 있는 것이 3가지가 있다.
-
-1. Filter
-2. Interceptor
-3. AOP
-
 스프링에서 사용되는 Filter, Interceptor, AOP 세 가지 기능은 모두 무슨 행동을 하기전에 먼저 실행하거나, 실행한 후에 추가적인 행동을 할 때 사용되는 기능들이다.
-
 그렇다면 요청에 흐름에 따라 필터, 인터셉터, AOP의 차이점에 대해 알아보자.
 
-Filter, Interceptor, AOP의 흐름
+갑론을박이 많지만, 
+- 인코딩이나 보안 관련 처리와 같은 web app의 전역적으로 처리해야 하는 로직은 필터로 구현하고 
+- 클라이언트에서 들어오는 디테일한 처리(인증, 권한 등)에 대해서는 주로 인터셉터에서 처리하는듯 하다.
 
-ㆍInterceptor와 Filter는 Servlet 단위에서 실행된다. <> 반면 AOP는 메소드 앞에 Proxy패턴의 형태로 실행된다.
-ㆍ실행순서를 보면 Filter가 가장 밖에 있고 그안에 Interceptor, 그안에 AOP가 있는 형태이다.
+### Filter, Interceptor, AOP의 흐름
 
- 
+- Interceptor와 Filter는 Servlet 단위에서 실행된다. <> 반면 AOP는 메소드 앞에 Proxy패턴의 형태로 실행된다.
+- 실행순서를 보면 Filter가 가장 밖에 있고 그안에 Interceptor, 그안에 AOP가 있는 형태이다.
+
 따라서 요청이 들어오면 Filter → Interceptor → AOP → Interceptor → Filter 순으로 거치게 된다.
 
 1. 서버를 실행시켜 서블릿이 올라오는 동안에 init이 실행되고, 그 후 doFilter가 실행된다. 
@@ -59,17 +47,15 @@ Filter, Interceptor, AOP의 흐름
 3. 컨트롤러에서 나와 postHandler, after Completion, doFilter 순으로 진행이 된다.
 4. 서블릿 종료 시 destroy가 실행된다.
 
-
 Filter, Interceptor, AOP의 개념
 1.  Filter(필터)
 말그대로 요청과 응답을 거른뒤 정제하는 역할을 한다.
 
 서블릿 필터는 DispatcherServlet 이전에 실행이 되는데 필터가 동작하도록 지정된 자원의 앞단에서 요청내용을 변경하거나,  여러가지 체크를 수행할 수 있다.
-
 또한 자원의 처리가 끝난 후 응답내용에 대해서도 변경하는 처리를 할 수가 있다.
 보통 web.xml에 등록하고, 일반적으로 인코딩 변환 처리, XSS방어 등의 요청에 대한 처리로 사용된다.
 
-
+```xml
 EX)
 <!-- 한글 처리를 위한 인코딩 필터 -->
 <filter>
@@ -84,6 +70,7 @@ EX)
     <filter-name>encoding</filter-name>
     <url-pattern>/*</url-pattern>
 </filter-mapping>
+```
 
 해당 필터의 이름은 encoding, 값은 UTF-8인 파라미터를 정의하고 있다. 
 필터의 URL-PATTERN을 /*로 정의하면 servlet, jsp뿐만 아니라 이미지와 같은 모든 자원의 요청에도 호출 된다.
